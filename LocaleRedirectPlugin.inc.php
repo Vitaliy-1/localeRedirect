@@ -8,7 +8,11 @@ class LocaleRedirectPlugin extends GenericPlugin
     {
         if (parent::register($category, $path)) {
             if ($this->getEnabled()) {
+                // handle locales redirect
                 HookRegistry::register('LoadHandler', array($this, 'handleLocaleRequest'));
+
+                // add info about locale urls for google inside head
+                HookRegistry::register('ArticleHandler::view',array(&$this, 'articleView'));
             }
             return true;
         }
@@ -33,18 +37,34 @@ class LocaleRedirectPlugin extends GenericPlugin
         return __('plugins.generic.localeRedirect.description');
     }
 
-    /**
-     * @copydoc Plugin::getActions()
-     */
 
     function handleLocaleRequest($hookName, $args)
     {
-        $request = $this->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
-
         $page = $args[0];
         $op = $args[1];
         $sourceFile = $args[2];
 
+        $request = $this->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        if ($page == "login") return false;
+
+        //AppLocale::setLocale("uk_UA");
+
+
+        if ($_GET["locale"] == "uk_UA") {
+            AppLocale::setLocale("uk_UA");
+            print_r($request->getSession()->getSessionData());
+        } elseif ($_GET["locale"] == "en_US") {
+            AppLocale::setLocale("en_US");
+            print_r($request->getSession()->getSessionData());
+        }
+
+    }
+
+    function articleView ($hookName, $args) {
+        $request = $args[0];
+        $templateMgr = TemplateManager::getManager($request);
+
+        //$templateMgr->addHeader();
     }
 }
